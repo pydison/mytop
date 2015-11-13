@@ -6,36 +6,18 @@
 import web
 import os
 import os.path
-from reportlab.lib.pagesizes import letter
-from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle, TA_CENTER
-from reportlab.lib.units import inch
-from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, PageBreak
 import MySQLdb
-import reportlab.rl_config
-from reportlab.pdfbase import pdfmetrics
-from reportlab.pdfbase.ttfonts import TTFont
-reportlab.rl_config.warnOnMissingFontGlyphs = 0
-pdfmetrics.registerFont(TTFont('song', '/var/www/mytop/static/simsun.ttc'))
-pdfmetrics.registerFont(TTFont('hei', '/var/www/mytop/static/simhei.ttf'))
-
-from reportlab.lib import fonts
-fonts.addMapping('song', 0, 0, 'song')
-fonts.addMapping('song', 0, 1, 'song')
-fonts.addMapping('song', 1, 0, 'hei')
-fonts.addMapping('song', 1, 1, 'hei')
-
-import copy
-stylesheet = getSampleStyleSheet()
-normalStyle = copy.deepcopy(stylesheet['Normal'])
-normalStyle.fontName = 'song'
-normalStyle.fontSize = 10
 
 class ATTA(object):
-
+    """
+    下载附件
+    """
     def GET(self,attaname):
-
+        """
+        主程序入口
+        """
         try:
-            attaname=attanaem.encode('utf-8')
+            attaname=attaname.encode('utf-8')
             self.atta_name = ''.join(('/var/www/mytop/static/', attaname))
             atta_= open(self.atta_name, "r+")
             web.header('Content-Type', 'application/octet-stream', 'charset = utf-8')
@@ -53,6 +35,29 @@ class PDF(object):
         """
         初始化
         """
+        from reportlab.lib.pagesizes import letter
+        from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle, TA_CENTER
+        from reportlab.lib.units import inch
+        from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, PageBreak
+        import reportlab.rl_config
+        from reportlab.pdfbase import pdfmetrics
+        from reportlab.pdfbase.ttfonts import TTFont
+        reportlab.rl_config.warnOnMissingFontGlyphs = 0
+        pdfmetrics.registerFont(TTFont('song', '/var/www/mytop/static/simsun.ttc'))
+        pdfmetrics.registerFont(TTFont('hei', '/var/www/mytop/static/simhei.ttf'))
+        
+        from reportlab.lib import fonts
+        fonts.addMapping('song', 0, 0, 'song')
+        fonts.addMapping('song', 0, 1, 'song')
+        fonts.addMapping('song', 1, 0, 'hei')
+        fonts.addMapping('song', 1, 1, 'hei')
+        
+        import copy
+        stylesheet = getSampleStyleSheet()
+        normalStyle = copy.deepcopy(stylesheet['Normal'])
+        normalStyle.fontName = 'song'
+        normalStyle.fontSize = 10
+
         self.width, self.height = letter
         self.width -= 50
         self.styles = getSampleStyleSheet()
