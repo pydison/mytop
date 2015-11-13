@@ -15,8 +15,8 @@ import reportlab.rl_config
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 reportlab.rl_config.warnOnMissingFontGlyphs = 0
-pdfmetrics.registerFont(TTFont('song', '/var/www/pdfs/static/simsun.ttc'))
-pdfmetrics.registerFont(TTFont('hei', '/var/www/pdfs/static/simhei.ttf'))
+pdfmetrics.registerFont(TTFont('song', '/var/www/mytop/static/simsun.ttc'))
+pdfmetrics.registerFont(TTFont('hei', '/var/www/mytop/static/simhei.ttf'))
 
 from reportlab.lib import fonts
 fonts.addMapping('song', 0, 0, 'song')
@@ -29,6 +29,21 @@ stylesheet = getSampleStyleSheet()
 normalStyle = copy.deepcopy(stylesheet['Normal'])
 normalStyle.fontName = 'song'
 normalStyle.fontSize = 10
+
+class ATTA(object):
+
+    def GET(self,attaname):
+
+        try:
+            attaname=attanaem.encode('utf-8')
+            self.atta_name = ''.join(('/var/www/mytop/static/', attaname))
+            atta_= open(self.atta_name, "r+")
+            web.header('Content-Type', 'application/octet-stream', 'charset = utf-8')
+            web.header('Content-disposition', 'attachment; filename = %s' % attaname)
+            content = atta_.read()
+            return content
+        except Exception as err:
+            return err
 
 class PDF(object):
     """
@@ -90,8 +105,8 @@ description, private_log, pending_reason, solution from ", table, " where id = %
         file1 = self.tick[1].encode('utf-8')
         file2 = self.tick[2].encode('utf-8')
         self.filepath = ''.join((file1, '_', file2, '.pdf'))
-        self.file_name = ''.join(('/var/www/pdfs/static/', self.filepath))
-        file_name2 = ''.join(('/var/www/pdfs/static/', file1))
+        self.file_name = ''.join(('/var/www/mytop/static/', self.filepath))
+        file_name2 = ''.join(('/var/www/mytop/static/', file1))
         self.story = [Spacer(1, 1.5*inch)]
         self.createLineItems()
         docu = SimpleDocTemplate(file_name2)
@@ -119,7 +134,7 @@ description, private_log, pending_reason, solution from ", table, " where id = %
         canvas.line(1*inch, 10.6*inch, 7*inch, 10.6*inch)
         canvas.line(1*inch, 9.1*inch, 7*inch, 9.1*inch)
         canvas.line(3.9*inch, 9.1*inch, 3.9*inch, 10.6*inch)
-        canvas.drawImage('/var/www/pdfs/static/logo.jpg', 431, 779, 72, 33)
+        canvas.drawImage('/var/www/mytop/static/logo.jpg', 431, 779, 72, 33)
 
         ptext = "<b><font size = 14>中山云平台工单 %s</font></b>" %ref
         para = Paragraph(ptext, style=normalStyle)
@@ -244,7 +259,8 @@ description, private_log, pending_reason, solution from ", table, " where id = %
         self.story.append(para)
 
 urls = (
-    '/(.*)', 'PDF'
+    '/atta/(.*)', 'ATTA',
+    '/pdf/(.*)', 'PDF',
 )
 
 application = web.application(urls, globals()).wsgifunc()
