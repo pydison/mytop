@@ -8,17 +8,17 @@ import os
 import os.path
 import MySQLdb
 
+conn = MySQLdb.connect(host='localhost', port=3306, user='root', passwd='', db='itop', charset='utf8')
+cur = conn.cursor()
+
 class ATTA(object):
     """
-    下载附件
+    下载附件  
     """
-    def GET(self,attaname):
-        """
-        主程序入口
-        """
+    def GET(self,id,attaname):
         try:
             attaname=attaname.encode('utf-8')
-            self.atta_name = ''.join(('/var/www/mytop/static/', attaname))
+            self.atta_name = ''.join(('/var/www/mytop/static/',str(id),'/',attaname))
             atta_= open(self.atta_name, "r+")
             web.header('Content-Type', 'application/octet-stream', 'charset = utf-8')
             web.header('Content-disposition', 'attachment; filename = %s' % attaname)
@@ -71,8 +71,6 @@ class PDF(object):
         '''
         id_ = int(ref[2:])
         table = self.tdict[ref[0]]
-        conn = MySQLdb.connect(host='localhost', port=3306, user='root', passwd='p', db='itop', charset='utf8')
-        cur = conn.cursor()
         sqltext = ''.join(("select id, ref, title, status, urgency, start_date, resolution_date, \
 sla_ttr_passed, sla_ttr_over, time_spent, org_id_friendlyname, caller_id_friendlyname, \
 agent_id_friendlyname, team_id_friendlyname, service_id_friendlyname, servicesubcategory_id_friendlyname, \
@@ -91,8 +89,6 @@ description, private_log, pending_reason, solution from ", table, " where id = %
         self.contacts = '<br/>'.join(contacts)
 
         self.create_pdf()
-        cur.close()
-        conn.close()
 
         try:
             file_ = open(self.file_name, "r+")
@@ -264,7 +260,7 @@ description, private_log, pending_reason, solution from ", table, " where id = %
         self.story.append(para)
 
 urls = (
-    '/atta/(.*)', 'ATTA',
+    '/atta/(.*)/(.*)', 'ATTA',
     '/pdf/(.*)', 'PDF',
 )
 
@@ -273,3 +269,5 @@ app = web.application(urls, globals())
 
 if __name__ == "__main__":
     app.run()
+    cur.close()
+    conn.close()
