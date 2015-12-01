@@ -73,8 +73,8 @@ class PDF(object):
         cur.execute("select contact_id from ilnkcontacttoticket where ticket_id = %s", (id_, ))
         contacts = []
         for contact_id in cur.fetchall():
-            cur.execute("select friendlyname from iview_Contact where id = %s", (contact_id, ))
-            contacts.append(cur.fetchone()[0])
+            cur.execute("select friendlyname,email,phone from iview_Contact where id = %s", (contact_id, ))
+            contacts.append('&nbsp;&nbsp;'.join((cur.fetchone())))
         self.contacts = '<br/>'.join(contacts)
 
         self.create_pdf()
@@ -264,15 +264,23 @@ class PDFC(PDF):
     def __init__(self):
         PDF.__init__(self)
         self.table = 'iview_Change'
-        self.text = "select id,ref,title,org_name,start_date,end_date,creation_date,supervisor_group_name,manager_group_name,manager_id_friendlyname,agent_id_friendlyname,impact,description,reason,fallback,private_log from "
+        self.text = "select id,ref,title,org_name,start_date,end_date,creation_date,supervisor_id,supervisor_id_friendlyname,manager_id,manager_id_friendlyname,agent_id,agent_id_friendlyname,impact,description,reason,fallback,private_log from "
 
     def createDocument(self, canvas, doc):
 
-        id,ref,title,org_name,start_date,end_date,creation_date,supervisor_group_name,manager_group_name,manager_id_friendlyname,agent_id_friendlyname = self.tick[:-5]
+        id,ref,title,org_name,start_date,end_date,creation_date,supervisor_id,supervisor_id_friendlyname,manager_id,manager_id_friendlyname,agent_id,agent_id_friendlyname = self.tick[:-5]
+
+        cur.execute("select email,phone from  iview_Contact where id=%s ",(supervisor_id,))
+        mail_s,phone_s = cur.fetchone()
+        cur.execute("select email,phone from  iview_Contact where id=%s ",(manager_id,))
+        mail_m,phone_m = cur.fetchone()
+        cur.execute("select email,phone from  iview_Contact where id=%s ",(agent_id,))
+        mail_a,phone_a = cur.fetchone()
 
         canvas.line(1*inch, 10.6*inch, 7*inch, 10.6*inch)
+        canvas.line(1*inch, 10*inch, 7*inch, 10*inch)
         canvas.line(1*inch, 9.1*inch, 7*inch, 9.1*inch)
-        canvas.line(3.9*inch, 9.1*inch, 3.9*inch, 10.6*inch)
+        #canvas.line(3.9*inch, 9.1*inch, 3.9*inch, 10.6*inch)
         canvas.drawImage('/root/mytop/static/logo.jpg', 431, 779, 72, 33)
 
         ptext = "<b><font size = 14>中山云平台变更申请表 %s</font></b>" %ref
@@ -286,75 +294,82 @@ class PDFC(PDF):
 
         para = Paragraph("申请日期:", style=normalStyle)
         para.wrapOn(canvas, self.width, self.height)
-        para.drawOn(canvas, 75, 740)
+        para.drawOn(canvas, 75, 745)
         para = Paragraph(str(creation_date), style=normalStyle)
         para.wrapOn(canvas, self.width, self.height)
-        para.drawOn(canvas, 155, 740)
-
-        para = Paragraph("变更负责人:", style=normalStyle)
-        para.wrapOn(canvas, self.width, self.height)
-        para.drawOn(canvas, 75, 720)
-        para = Paragraph(agent_id_friendlyname, style=normalStyle)
-        para.wrapOn(canvas, self.width, self.height)
-        para.drawOn(canvas, 155, 720)
+        para.drawOn(canvas, 155, 745)
 
         para = Paragraph("变更起始时间:", style=normalStyle)
         para.wrapOn(canvas, self.width, self.height)
-        para.drawOn(canvas, 75, 700)
+        para.drawOn(canvas, 75, 725)
         para = Paragraph(str(start_date), style=normalStyle)
         para.wrapOn(canvas, self.width, self.height)
-        para.drawOn(canvas, 155, 700)
+        para.drawOn(canvas, 155, 725)
 
         para = Paragraph("变更截止时间:", style=normalStyle)
         para.wrapOn(canvas, self.width, self.height)
-        para.drawOn(canvas, 75, 680)
+        para.drawOn(canvas, 285, 725)
         para = Paragraph(str(end_date), style=normalStyle)
         para.wrapOn(canvas, self.width, self.height)
-        para.drawOn(canvas, 155, 680)
+        para.drawOn(canvas, 360, 725)
 
+        para = Paragraph("变更执行:", style=normalStyle)
+        para.wrapOn(canvas, self.width, self.height)
+        para.drawOn(canvas, 75, 700)
+        para = Paragraph(agent_id_friendlyname, style=normalStyle)
+        para.wrapOn(canvas, self.width, self.height)
+        para.drawOn(canvas, 130, 700)
+        para = Paragraph("邮箱:", style=normalStyle)
+        para.wrapOn(canvas, self.width, self.height)
+        para.drawOn(canvas, 195, 700)
+        para = Paragraph(mail_a, style=normalStyle)
+        para.wrapOn(canvas, self.width, self.height)
+        para.drawOn(canvas, 226, 700)
+        para = Paragraph("电话:", style=normalStyle)
+        para.wrapOn(canvas, self.width, self.height)
+        para.drawOn(canvas, 350, 700)
+        para = Paragraph(phone_a, style=normalStyle)
+        para.wrapOn(canvas, self.width, self.height)
+        para.drawOn(canvas, 385, 700)
 
         para = Paragraph("变更主管:", style=normalStyle)
         para.wrapOn(canvas, self.width, self.height)
-        para.drawOn(canvas, 285, 740)
+        para.drawOn(canvas, 75, 680)
         para = Paragraph(manager_id_friendlyname, style=normalStyle)
         para.wrapOn(canvas, self.width, self.height)
-        para.drawOn(canvas, 360, 740)
+        para.drawOn(canvas, 130, 680)
+        para = Paragraph("邮箱:", style=normalStyle)
+        para.wrapOn(canvas, self.width, self.height)
+        para.drawOn(canvas, 195, 680)
+        para = Paragraph(mail_m, style=normalStyle)
+        para.wrapOn(canvas, self.width, self.height)
+        para.drawOn(canvas, 226, 680)
+        para = Paragraph("电话:", style=normalStyle)
+        para.wrapOn(canvas, self.width, self.height)
+        para.drawOn(canvas, 350, 680)
+        para = Paragraph(phone_m, style=normalStyle)
+        para.wrapOn(canvas, self.width, self.height)
+        para.drawOn(canvas, 385, 680)
 
-        #para = Paragraph("结束:", style=normalStyle)
-        #para.wrapOn(canvas, self.width, self.height)
-        #para.drawOn(canvas, 285, 720)
-        #para = Paragraph(str(end), style=normalStyle)
-        #para.wrapOn(canvas, self.width, self.height)
-        #para.drawOn(canvas, 360, 720)
+        para = Paragraph("变更审批:", style=normalStyle)
+        para.wrapOn(canvas, self.width, self.height)
+        para.drawOn(canvas, 75, 660)
+        para = Paragraph(supervisor_id_friendlyname, style=normalStyle)
+        para.wrapOn(canvas, self.width, self.height)
+        para.drawOn(canvas, 130, 660)
+        para = Paragraph("邮箱:", style=normalStyle)
+        para.wrapOn(canvas, self.width, self.height)
+        para.drawOn(canvas, 195, 660)
+        para = Paragraph(mail_s, style=normalStyle)
+        para.wrapOn(canvas, self.width, self.height)
+        para.drawOn(canvas, 226, 660)
+        para = Paragraph("电话:", style=normalStyle)
+        para.wrapOn(canvas, self.width, self.height)
+        para.drawOn(canvas, 350, 660)
+        para = Paragraph(phone_s, style=normalStyle)
+        para.wrapOn(canvas, self.width, self.height)
+        para.drawOn(canvas, 385, 680)
 
-        #para = Paragraph("持续:", style=normalStyle)
-        #para.wrapOn(canvas, self.width, self.height)
-        #para.drawOn(canvas, 285, 700)
-        #if spent:
-        #    spent_ = self.time2str(spent)
-        #else:
-        #    spent_ = ''
-        #para = Paragraph(spent_, style=normalStyle)
-        #para.wrapOn(canvas, self.width, self.height)
-        #para.drawOn(canvas, 360, 700)
-
-        #para = Paragraph("过期:", style=normalStyle)
-        #para.wrapOn(canvas, self.width, self.height)
-        #para.drawOn(canvas, 285, 680)
-        #if over:
-        #    over = self.time2str(over)
-        #else:
-        #    over = '0'
-        #para = Paragraph(over, style=normalStyle)
-        #para.wrapOn(canvas, self.width, self.height)
-        #para.drawOn(canvas, 360, 680)
-
-        #para = Paragraph("优先级:", style=normalStyle)
-        #para.wrapOn(canvas, self.width, self.height)
-        #para.drawOn(canvas, 285, 660)
-        #para = Paragraph(self.urgencys[int(urgency)], style=normalStyle)
-        #para.wrapOn(canvas, self.width, self.height)
-        #para.drawOn(canvas, 360, 660)
 
     def createLineItems(self):
         """
@@ -372,6 +387,11 @@ class PDFC(PDF):
         para = Paragraph(impact_text, normalStyle)
         self.story.append(para)
 
+        fal = fallback.replace('\r\n', '<br/>')
+        fal_text = '<br/>'.join((' ', ' ', '【回退步骤和回退条件】', '_'*85, ' ', fal))
+        para = Paragraph(fal_text, normalStyle)
+        self.story.append(para)
+
         header = log.replace('\r\n', '<br/>').replace('\n\n', '<br/>').replace('\n', '<br/><br/>')
         header_text = '<br/>'.join((' ', ' ', '【日志记录】', '_'*85, header))
         para = Paragraph(header_text, normalStyle)
@@ -381,9 +401,9 @@ class PDFC(PDF):
         #para = Paragraph(atts, normalStyle)
         #self.story.append(para)
 
-        #contacts = '<br/>'.join((' ', ' ', '【联系人】', '_'*85, self.contacts))
-        #para = Paragraph(contacts, normalStyle)
-        #self.story.append(para)
+        contacts = '<br/>'.join((' ', ' ', '【联系人】', '_'*85, self.contacts))
+        para = Paragraph(contacts, normalStyle)
+        self.story.append(para)
 
 class PDFI(PDFR):
     def __init__(self):
@@ -405,6 +425,6 @@ urls = (
 if __name__ == "__main__":
     #app.run()
     pdfc=PDFC()
-    pdfc.GET('000282')
+    pdfc.GET('000067')
     cur.close()
     conn.close()
